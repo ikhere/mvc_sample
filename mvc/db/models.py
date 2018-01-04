@@ -2,12 +2,13 @@ from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-from mvc.db.mixins import TransactionMixin, DictionaryMixin
+from mvc.db import mixins
 
 BASE = declarative_base()
 
 
-class MVCBase(TransactionMixin, DictionaryMixin):
+class MVCBase(mixins.TransactionMixin, mixins.DictionaryMixin,
+              mixins.TimestampMixin, mixins.SoftDeleteMixin):
     pass
 
 

@@ -1,5 +1,7 @@
 import six
 
+from datetime import datetime
+from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.orm import object_mapper
 
@@ -60,3 +62,18 @@ class DictionaryMixin(six.Iterator):
 
     def keys(self):
         return self._as_dict().keys()
+
+
+class TimestampMixin(object):
+    created_at = Column(DateTime, default=lambda: datetime.utcnow())
+    updated_at = Column(DateTime, onupdate=lambda: datetime.utcnow())
+
+
+class SoftDeleteMixin(object):
+    deleted = Column(Boolean, default=False)
+    deleted_at = Column(DateTime)
+
+    def soft_delete(self, session):
+        self.deleted = True
+        self.deleted_at = datetime.utcnow()
+        self.save(session)
