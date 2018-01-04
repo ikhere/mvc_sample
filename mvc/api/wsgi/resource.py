@@ -55,6 +55,8 @@ class ResourceExceptionHandler(object):
                                                     detail=exc_val.errors))
         elif isinstance(exc_val, exceptions.NotFound):
             raise Fault(webob.exc.HTTPNotFound(explanation=exc_val.msg))
+        elif isinstance(exc_val, exceptions.Invalid):
+            raise Fault(webob.exc.HTTPBadRequest(explanation=exc_val.msg))
 
         return False
 
@@ -121,11 +123,11 @@ class Resource(object):
                       (action, self.controller, ex))
             raise webob.exc.HTTPNotImplemented()
 
-    def process_action(self, action_args):
+    def process_action(self, request, action_args):
         action = self.get_action(action_args)
         try:
             with ResourceExceptionHandler():
-                action_result = action(**action_args)
+                action_result = action(request, **action_args)
         except Fault as ex:
             response = ex
         else:
@@ -144,7 +146,7 @@ class Resource(object):
 
     def process(self, request):
         action_args = self.get_action_args(request)
-        response = self.process_action(action_args)
+        response = self.process_action(request, action_args)
         return response
 
     @wsgify(RequestClass=Request)

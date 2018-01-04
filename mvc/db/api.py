@@ -31,10 +31,9 @@ def dispose_engine():
 def handle_deleted(fn):
     @wraps(fn)
     def wrapped(*args, **kwargs):
-        read_deleted = kwargs.pop('read_deleted', 'no')
+        read_deleted = kwargs.pop('read_deleted') or 'no'
         if read_deleted not in ('yes', 'no', 'only'):
-            raise ValueError("Unrecognized value '%s' for read_deleted" %
-                             read_deleted)
+            raise exceptions.InvalidFilterValue(value=read_deleted)
         kwargs['read_deleted'] = read_deleted
         return fn(*args, **kwargs)
     return wrapped
@@ -52,8 +51,8 @@ def model_query(model, read_deleted=None):
     return query
 
 
-def person_get_all():
-    return model_query(models.Person).all()
+def person_get_all(deleted=None):
+    return model_query(models.Person, read_deleted=deleted).all()
 
 
 def person_get(person_id):

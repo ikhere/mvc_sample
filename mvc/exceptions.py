@@ -64,5 +64,9 @@ class InvalidInput(Invalid):
         super(InvalidInput, self).__init__(**kwargs)
 
 
+class InvalidFilterValue(Invalid):
+    message = "Invalid filter value '%(value)s'."
+
+
 class PersonNotFound(NotFound):
     message = "Person '%(reference)s' not found."
