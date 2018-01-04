@@ -1,5 +1,7 @@
 import uuid
 
+from functools import wraps
+
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -26,9 +28,27 @@ def dispose_engine():
     get_engine().dispose()
 
 
-def model_query(model):
+def handle_deleted(fn):
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+        read_deleted = kwargs.pop('read_deleted', 'no')
+        if read_deleted not in ('yes', 'no', 'only'):
+            raise ValueError("Unrecognized value '%s' for read_deleted" %
+                             read_deleted)
+        kwargs['read_deleted'] = read_deleted
+        return fn(*args, **kwargs)
+    return wrapped
+
+
+@handle_deleted
+def model_query(model, read_deleted=None):
     session = get_session()
     query = session.query(model)
+
+    if read_deleted in ('no', 'only'):
+        deleted = read_deleted == 'only'
+        query = query.filter_by(deleted=deleted)
+
     return query
 
 
@@ -66,4 +86,4 @@ def person_update(person_id, values):
 def person_delete(person_id):
     session = get_session()
     person_ref = person_get(person_id)
-    person_ref.delete(session)
+    person_ref.soft_delete(session)

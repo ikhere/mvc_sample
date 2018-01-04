@@ -45,7 +45,6 @@ class PersonController(BaseController):
         person = self.db.person_update(id, update_values)
         return {'person': person}
 
-
     @response_code(204)
     def delete(self, id, body=None):
         LOG.info("Request to delete person '%s'" % id)
